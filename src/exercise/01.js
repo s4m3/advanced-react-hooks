@@ -1,5 +1,3 @@
-// 2. 💯 simulate setState with an object
-
 import * as React from 'react'
 
 const countReducer = (state, action) => {
