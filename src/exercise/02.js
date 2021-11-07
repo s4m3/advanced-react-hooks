@@ -22,13 +22,30 @@ function dataInfoReducer(state, action) {
   }
 }
 
+const useSafeDispatch = (dispatch) => {
+  const mountedRef = React.useRef(false)
+  React.useLayoutEffect(() => {
+    mountedRef.current = true
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
+
+  return React.useCallback(
+    (...args) => (mountedRef.current ? dispatch(...args) : void 0),
+    [dispatch],
+  )
+}
+
 const useAsync = (initialState) => {
-  const [state, dispatch] = React.useReducer(dataInfoReducer, {
+  const [state, unsafeDispatch] = React.useReducer(dataInfoReducer, {
     status: 'idle',
     data: null,
     error: null,
     ...initialState,
   })
+
+  const dispatch = useSafeDispatch(unsafeDispatch);
 
   const run = React.useCallback((promise) => {
     if (!promise) {
@@ -43,7 +60,7 @@ const useAsync = (initialState) => {
         dispatch({ type: 'rejected', error })
       }
     );
-  }, []);
+  }, [dispatch]);
 
   return { ...state, run };
   // --------------------------- end ---------------------------
