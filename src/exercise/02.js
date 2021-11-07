@@ -22,7 +22,7 @@ function dataInfoReducer(state, action) {
   }
 }
 
-const useAsync = (asyncCallback, initialState, dependencies) => {
+const useAsync = (asyncCallback, initialState) => {
   const [state, dispatch] = React.useReducer(dataInfoReducer, {
     data: null,
     error: null,
@@ -43,22 +43,20 @@ const useAsync = (asyncCallback, initialState, dependencies) => {
         dispatch({ type: 'rejected', error })
       }
     );
-    // the react-hooks/exhaustive-deps rule. We'll fix this in an extra credit.
-  }, dependencies);
+  }, [asyncCallback]);
 
   return state;
   // --------------------------- end ---------------------------
 }
 
 function PokemonInfo({ pokemonName }) {
-  const state = useAsync(() => {
-      if (!pokemonName) {
-        return
-      }
-      return fetchPokemon(pokemonName)
-    },
-    { status: pokemonName ? 'pending' : 'idle' },
-    [pokemonName]);
+  const asyncCallback = React.useCallback(() => {
+    if (!pokemonName) {
+      return
+    }
+    return fetchPokemon(pokemonName);
+  }, [pokemonName])
+  const state = useAsync(asyncCallback, { status: pokemonName ? 'pending' : 'idle' });
   const { data, status, error } = state
 
   switch (status) {
